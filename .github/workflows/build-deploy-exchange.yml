@@ -1,6 +1,10 @@
 name: Build and deploy to dev
 on:
   workflow_call:
+    keyvault-key:
+      description: Access key to KeyVault
+      type: string
+      default: ''
 
 jobs:
   build-deploy:
