@@ -1,9 +1,10 @@
 name: Build and deploy to dev
 on:
   workflow_call:
-    keyvault-key:
-      description: Access key to KeyVault
-      type: string
+    inputs:
+      keyvault-key:
+        description: Access key to KeyVault
+        type: string
 
 jobs:
   build-deploy:
@@ -30,6 +31,7 @@ jobs:
           
       - uses: Azure/get-keyvault-secrets@v1
         with:
+          ## example from input: dotnet-version: ${{ inputs.dotnet-version }}
           keyvault: "jpworks-keyvault" # The name of KeyVault in Azure
           secrets: '
             salesforce-principal,
