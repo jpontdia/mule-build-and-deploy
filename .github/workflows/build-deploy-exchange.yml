@@ -4,7 +4,6 @@ on:
     keyvault-key:
       description: Access key to KeyVault
       type: string
-      default: ''
 
 jobs:
   build-deploy:
