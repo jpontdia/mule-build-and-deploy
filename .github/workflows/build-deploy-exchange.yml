@@ -1,10 +1,15 @@
-name: Build and deploy to dev
+name: Build and deploy to exchange
 on:
   workflow_call:
     inputs:
       keyvault-key:
+        required: true
         description: Access key to KeyVault
         type: string
+    secrets:
+      azure-credentials:
+        required: true
+        description: Azure Credentials for login
 
 jobs:
   build-deploy:
@@ -27,12 +32,12 @@ jobs:
       - name: Log in with Azure
         uses: azure/login@v1
         with:
-          creds: '${{ secrets.AZURE_CREDENTIALS }}'
+          creds: ${{ secrets.azure-credentials }}
 
       - name: Get secrets from KeyValult
         uses: Azure/get-keyvault-secrets@v1
         with:
-          keyvault: "jpworks-keyvault" # The name of KeyVault in Azure
+          keyvault: '${{ inputs.keyvault-key }}' # The name of KeyVault in Azure
           secrets: '
             salesforce-principal,
             salesforce-consumerkey,
