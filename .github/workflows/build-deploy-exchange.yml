@@ -54,7 +54,7 @@ jobs:
         id: secretmanager # ID for secrets that you will reference
       
       # Creates a settings.xml file and configure the anypoint repositories for the organization and the mulesoft EE
-      - name: Configuring settings.xml
+      - name: Create maven settings.xml with connected app and nexus ee credentials
         uses: whelk-io/maven-settings-xml-action@v21
         with:
           servers: >
@@ -128,9 +128,10 @@ jobs:
           cat $HOME/.m2/settings.xml
           echo ${{ github.run_number }}
 
-      - name: Copy readme file to exchange documentation
+      - name: Copy Anypoint Exchange documentation
         run: |
-          cp README.md exchange-docs/home.md 
+          cp -Rfpv README.md exchange-docs/home.md 
+          cp -Rfpv docs/*.* exchange-docs/docs 
 
       - name: Compile code
         # I am using an environment variable just for testing dinamic content execution
