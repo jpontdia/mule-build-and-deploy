@@ -20,7 +20,8 @@ jobs:
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so the job can access it
-      - uses: actions/checkout@v3
+      - name: Get the source code
+        uses: actions/checkout@v3
 
       - name: Set up JDK 8
         uses: actions/setup-java@v3
@@ -53,7 +54,7 @@ jobs:
         id: secretmanager # ID for secrets that you will reference
       
       # Creates a settings.xml file and configure the anypoint repositories for the organization and the mulesoft EE
-      - name: maven-settings-xml-action
+      - name: Configuring settings.xml
         uses: whelk-io/maven-settings-xml-action@v21
         with:
           servers: >
@@ -128,6 +129,7 @@ jobs:
           echo ${{ github.run_number }}
 
       - name: Compile code
+        # I am using an environment variable just for testing dinamic content execution
         run: $MavenCompile
 
       - name: Run test cases and package
@@ -144,26 +146,21 @@ jobs:
       - name: Deploy to anypoint exchange
         run: |
           ## Deploy to anypoint exchange
-          mvn deploy -DskipTests \
-           -Dsalesforce.principal="${{ steps.secretmanager.outputs.salesforce-principal }}" \
-           -Dsalesforce.consumerkey="${{ steps.secretmanager.outputs.salesforce-consumerkey }}" \
-           -Dsalesforce.keystore="${{ steps.secretmanager.outputs.salesforce-keystore }}" \
-           -Dsalesforce.storepassword="${{ steps.secretmanager.outputs.salesforce-storepassword }}"
+          mvn deploy -DskipTests 
 
-
-      - name: Publish MUnit Application Coverage Report
+      - name: Publish Artifact - MUnit Application Coverage Report
         uses: actions/upload-artifact@master
         with:
           name: munit-application-coverage-report
           path: target/site/munit/coverage/*
       
-      - name: Publish MUnit Report
+      - name: Publish Artifact - MUnit Report
         uses: actions/upload-artifact@master
         with:
           name: munit-test-report
           path: target/surefire-reports/*
 
-      - name: Upload Jar as an artifact 
+      - name: Publish Artifact - Binary Service Jar 
         uses: actions/upload-artifact@master
         with:
           name: artifacts
