@@ -130,8 +130,8 @@ jobs:
 
       - name: Copy Anypoint Exchange documentation
         run: |
-          cp -Rfpv README.md exchange-docs/home.md 
-          cp -Rfpv docs/*.* exchange-docs/docs 
+          cp -Rfpv README.md exchange-docs/home.md
+          [ -d "docs/*.*" ] && cp -Rfpv docs/*.* exchange-docs/docs/*.* 
 
       - name: Compile code
         # I am using an environment variable just for testing dinamic content execution
