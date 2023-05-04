@@ -12,10 +12,11 @@ on:
         description: Azure Credentials for login
 
 jobs:
-  build-backup:
+  build1:
     if: ${{ false }}
     runs-on: ubuntu-latest
     env:
+      #For testing dynamic content
       MavenCompile: mvn compile
 
     steps:
@@ -23,21 +24,12 @@ jobs:
       - name: Get the source code
         uses: actions/checkout@v3
 
-      - name: Set up JDK 8
-        uses: actions/setup-java@v3
-        with:
-          java-version: '8'
-          # Available options: liberica, corretto
-          distribution: 'temurin'
-          check-latest: true
-          #cache: 'maven'
-
-      - name: Log in with Azure
+      - name: Azure log-in
         uses: azure/login@v1
         with:
           creds: ${{ secrets.azure-credentials }}
 
-      - name: Get secrets from KeyValult
+      - name: Azure get KeyVault secrets
         uses: Azure/get-keyvault-secrets@v1
         with:
           keyvault: '${{ inputs.keyvault-key }}' # The name of KeyVault in Azure
@@ -53,8 +45,17 @@ jobs:
             '
         id: secretmanager # ID for secrets that you will reference
       
+      - name: Setup JDK 8
+        uses: actions/setup-java@v3
+        with:
+          java-version: '8'
+          # Available options: liberica, corretto
+          distribution: 'temurin'
+          check-latest: true
+          cache: 'maven'
+
       # Creates a settings.xml file and configure the anypoint repositories for the organization and the mulesoft EE
-      - name: Create maven settings.xml with connected app and nexus ee credentials
+      - name: Maven settings.xml
         uses: whelk-io/maven-settings-xml-action@v21
         with:
           servers: >
@@ -207,3 +208,34 @@ jobs:
           tree $HOME/work
           echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
           echo "Run number: ${{ github.run_number }}"
+
+      - name: Azure log-in
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.azure-credentials }}
+
+      - name: Azure get KeyVault secrets
+        uses: Azure/get-keyvault-secrets@v1
+        with:
+          keyvault: '${{ inputs.keyvault-key }}' # The name of KeyVault in Azure
+          secrets: '
+            salesforce-principal,
+            salesforce-consumerkey,
+            salesforce-keystore,
+            salesforce-storepassword,
+            mulesoft-nexus-ee-user,
+            mulesoft-nexus-ee-password,
+            cicd-connectedapp-clientid,
+            cicd-connectedapp-secret
+            '
+        id: keyvault
+
+      - name: Install NodeJs
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install Anypoint CLI
+        run:
+          npm install -g anypoint-cli-v4
+          anypoint-cli-v4 plugins:install anypoint-cli-cloudhub-plugin
