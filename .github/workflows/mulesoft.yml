@@ -184,9 +184,12 @@ jobs:
 
       - name: DEBUG - echo
         run: |
+          echo "HOME:"
           ls -la $HOME
-          tree $HOME
-          echo ${{ github.run_number }}
+          echo "tree HOME/work"
+          tree $HOME/work
+          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+          echo "Run number: ${{ github.run_number }}"
 
   deploy-dev:
     name: Development
@@ -198,8 +201,9 @@ jobs:
     steps:
       - name: DEBUG - echo
         run: |
-          echo "deployment to dev"
+          echo "HOME:"
           ls -la $HOME
-          ls -la $GITHUB_WORKSPACE
-          tree $GITHUB_WORKSPACE
+          echo "tree HOME/work"
+          tree $HOME/work
+          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
           echo "Run number: ${{ github.run_number }}"
