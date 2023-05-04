@@ -1,4 +1,4 @@
-name: Build and deploy to mulesoft services
+name: Mulesoft
 on:
   workflow_call:
     inputs:
