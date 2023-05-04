@@ -172,6 +172,7 @@ jobs:
           path: target/*.jar
 
   build:
+    name: Build mulesoft asset 
     runs-on: ubuntu-latest
     env:
       MavenCompile: mvn compile
@@ -185,4 +186,22 @@ jobs:
         run: |
           ls -la $HOME
           tree $HOME
+          echo ${{ github.run_number }}
+
+  deploy-dev:
+    name: Deploy service to dev environment
+    needs: [build]
+    runs-on: ubuntu-latest
+    environment:
+      name: dep
+      url: 'https://dev.myapp.com'
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so the job can access it
+      - name: Get the source code
+        uses: actions/checkout@v3
+
+      - name: DEBUG - echo
+        run: |
+          echo "deployment to dev"
+          ls -la $HOME
           echo ${{ github.run_number }}
