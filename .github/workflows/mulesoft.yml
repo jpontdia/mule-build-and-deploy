@@ -236,6 +236,7 @@ jobs:
           node-version: 18
 
       - name: Install Anypoint CLI
-        run:
+        run: |
           npm install -g anypoint-cli-v4
+          anypoint-cli-v4 --version
           anypoint-cli-v4 plugins:install anypoint-cli-cloudhub-plugin
