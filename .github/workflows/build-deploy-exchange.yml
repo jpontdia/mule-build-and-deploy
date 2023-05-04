@@ -12,8 +12,8 @@ on:
         description: Azure Credentials for login
 
 jobs:
-  build-deploy:
-    # The type of runner that the job will run on 
+  build-deploy-backup:
+    if: ${{ false }}
     runs-on: ubuntu-latest
     env:
       MavenCompile: mvn compile
@@ -170,3 +170,19 @@ jobs:
         with:
           name: artifacts
           path: target/*.jar
+
+  build:
+    runs-on: ubuntu-latest
+    env:
+      MavenCompile: mvn compile
+
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so the job can access it
+      - name: Get the source code
+        uses: actions/checkout@v3
+
+      - name: DEBUG - echo
+        run: |
+          ls -la $HOME
+          tree $HOME
+          echo ${{ github.run_number }}
