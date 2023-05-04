@@ -218,16 +218,7 @@ jobs:
         uses: Azure/get-keyvault-secrets@v1
         with:
           keyvault: '${{ inputs.keyvault-key }}' # The name of KeyVault in Azure
-          secrets: '
-            salesforce-principal,
-            salesforce-consumerkey,
-            salesforce-keystore,
-            salesforce-storepassword,
-            mulesoft-nexus-ee-user,
-            mulesoft-nexus-ee-password,
-            cicd-connectedapp-clientid,
-            cicd-connectedapp-secret
-            '
+          secrets: 'salesforce-principal,salesforce-consumerkey,salesforce-keystore,salesforce-storepassword'
         id: keyvault
 
       - name: Install NodeJs
