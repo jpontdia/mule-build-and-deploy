@@ -1,4 +1,4 @@
-name: Build and deploy to exchange
+name: Build and deploy to mulesoft services
 on:
   workflow_call:
     inputs:
@@ -12,7 +12,7 @@ on:
         description: Azure Credentials for login
 
 jobs:
-  build-deploy-backup:
+  build-backup:
     if: ${{ false }}
     runs-on: ubuntu-latest
     env:
@@ -189,7 +189,7 @@ jobs:
           echo ${{ github.run_number }}
 
   deploy-dev:
-    name: Deploy dev
+    name: Development
     needs: [build]
     runs-on: ubuntu-latest
     environment:
