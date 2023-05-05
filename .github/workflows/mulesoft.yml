@@ -12,8 +12,7 @@ on:
         description: Azure Credentials for login
 
 jobs:
-  build1:
-    if: ${{ false }}
+  build:
     runs-on: ubuntu-latest
     env:
       #For testing dynamic content
@@ -143,37 +142,39 @@ jobs:
           ## Get the git commit hash 
           commitHash=$(git rev-parse --short "$GITHUB_SHA")
 
-          mvn package \
+          mvn package -DskipTests \
            -Dsalesforce.principal="${{ steps.secretmanager.outputs.salesforce-principal }}" \
            -Dsalesforce.consumerkey="${{ steps.secretmanager.outputs.salesforce-consumerkey }}" \
            -Dsalesforce.keystore="${{ steps.secretmanager.outputs.salesforce-keystore }}" \
            -Dsalesforce.storepassword="${{ steps.secretmanager.outputs.salesforce-storepassword }}"
 
       - name: Deploy to anypoint exchange
+        if: ${{ false }}    
         run: |
           ## Deploy to anypoint exchange
           mvn deploy -DskipTests 
 
-      - name: Publish Artifact - MUnit Application Coverage Report
+      - name: Publish - MUnit Application Coverage Report
         uses: actions/upload-artifact@master
         with:
           name: munit-application-coverage-report
           path: target/site/munit/coverage/*
       
-      - name: Publish Artifact - MUnit Report
+      - name: Publish - MUnit Report
         uses: actions/upload-artifact@master
         with:
           name: munit-test-report
           path: target/surefire-reports/*
 
-      - name: Publish Artifact - Binary Service Jar 
+      - name: Publish - JAR 
         uses: actions/upload-artifact@master
         with:
-          name: artifacts
+          name: jar
           path: target/*.jar
 
-  build:
+  build-backup:
     name: Build 
+    if: ${{ false }}    
     runs-on: ubuntu-latest
     env:
       MavenCompile: mvn compile
@@ -209,6 +210,10 @@ jobs:
       name: dev
       url: 'https://dev.myapp.com'
     steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: jar
+            
       - name: DEBUG - echo
         run: |
           echo "HOME:"
@@ -217,6 +222,10 @@ jobs:
           tree $HOME/work
           echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
           echo "Run number: ${{ github.run_number }}"
+
+          # Get the jar file
+          jar=$(ls *.jar)
+          echo "Jar file: $jar"
 
       - name: Azure log-in
         uses: azure/login@v1
@@ -255,31 +264,31 @@ jobs:
 
       - name: Deploy Application
         run: |
-          echo "1"
-          echo "${{ steps.secretmanager.outputs.cicd-connectedapp-secret }}"
-          echo "${{ steps.secretmanager.outputs.cicd-connectedapp-secret }}" | sed 's/./& /g'
-
-          echo "2"
-          echo "${{ steps.secretmanager.outputs.cicd-connectedapp-clientid }}"
-          echo "${{ steps.secretmanager.outputs.cicd-connectedapp-clientid }}" | sed 's/./& /g'
-
-          echo "3"
           ANYPOINT_CLIENT_ID="${{ steps.secretmanager.outputs.cicd-connectedapp-clientid }}"
           ANYPOINT_CLIENT_SECRET="${{ steps.secretmanager.outputs.cicd-connectedapp-secret }}"
-          
-          echo "4"
-          echo "$ANYPOINT_CLIENT_ID"
-          echo "$ANYPOINT_CLIENT_ID" | sed 's/./& /g'
-          
-          echo "5"
-          echo "$ANYPOINT_CLIENT_SECRET"
-          echo "$ANYPOINT_CLIENT_SECRET" | sed 's/./& /g'
 
-          service="micorp-order-sapi-dev"
+          start=$(date +%s)
+          echo ""
+          echo "Deployment process start"           
 
+          service="micorp-customer-sapi"
+          deployment-name="${service}-dev"
+
+          # Get the current status of the service
           DEPLOYMENT_STATUS=$(\
             anypoint-cli-v4 runtime-mgr cloudhub-application describe \
             --client_id $ANYPOINT_CLIENT_ID \
             --client_secret $ANYPOINT_CLIENT_SECRET \
             --output "json" $service | jq -r ".status")
           echo "Deployment status for service: $service is: $DEPLOYMENT_STATUS"
+
+          # Verify if deployment is for update or new application
+          operation="depoy"
+          if [ "$DEPLOYMENT_STATUS" != "" ]; then
+            operation="modify"
+          fi
+          echo "Deployment operation for serivce: $service is: $operation"
+
+          end=$(date +%s)
+
+                    
