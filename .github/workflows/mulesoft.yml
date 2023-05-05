@@ -218,7 +218,7 @@ jobs:
         uses: Azure/get-keyvault-secrets@v1
         with:
           keyvault: '${{ inputs.keyvault-key }}' # The name of KeyVault in Azure
-          secrets: 'salesforce-principal,salesforce-consumerkey,salesforce-keystore,salesforce-storepassword'
+          secrets: 'cicd-connectedapp-clientid,cicd-connectedapp-secret,salesforce-principal,salesforce-consumerkey,salesforce-keystore,salesforce-storepassword'
         id: keyvault
 
       - name: Install NodeJs
@@ -228,6 +228,22 @@ jobs:
 
       - name: Install Anypoint CLI
         run: |
+          echo "Install anypoint-cli-v4..."
           npm install -g anypoint-cli-v4
+          echo ""
+          echo "anypoint-cli-v4 --version: "
           anypoint-cli-v4 --version
+          echo ""
+          echo "Installing cloudhub-plugin"
           anypoint-cli-v4 plugins:install anypoint-cli-cloudhub-plugin
+
+      - name: Deploy Application
+        run: |
+          ANYPOINT_CLIENT_ID=$${{ steps.keyvault.outputs.cicd-connectedapp-clientid }}
+          ANYPOINT_CLIENT_SECRET=$${{ steps.keyvault.outputs.cicd-connectedapp-secret }}
+          DEPLOYMENT_STATUS=$(\
+            anypoint-cli-v4 runtime-mgr cloudhub-application describe \
+            --client_id $ANYPOINT_CLIENT_ID \
+            --client_secret $ANYPOINT_CLIENT_SECRET \
+            --output "json" $service | jq -r ".status")
+          echo "Deployment status for service: $service is: $DEPLOYMENT_STATUS"
