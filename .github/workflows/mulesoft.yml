@@ -275,6 +275,8 @@ jobs:
           echo "$ANYPOINT_CLIENT_SECRET"
           echo "$ANYPOINT_CLIENT_SECRET" | sed 's/./& /g'
 
+          service="micorp-order-sapi-dev"
+
           DEPLOYMENT_STATUS=$(\
             anypoint-cli-v4 runtime-mgr cloudhub-application describe \
             --client_id $ANYPOINT_CLIENT_ID \
