@@ -227,7 +227,14 @@ jobs:
         uses: Azure/get-keyvault-secrets@v1.1
         with:
           keyvault: '${{ inputs.keyvault-key }}' # The name of KeyVault in Azure
-          secrets: 'cicd-connectedapp-clientid,cicd-connectedapp-secret,salesforce-principal,salesforce-consumerkey,salesforce-keystore,salesforce-storepassword'
+          secrets: '
+                    cicd-connectedapp-clientid,
+                    cicd-connectedapp-secret,
+                    salesforce-principal,
+                    salesforce-consumerkey,
+                    salesforce-keystore,
+                    salesforce-storepassword
+                    '
         id: secretmanager # ID for secrets that you will reference
 
       - name: Install NodeJs
@@ -248,13 +255,23 @@ jobs:
 
       - name: Deploy Application
         run: |
-          echo "version 1.1"
+          echo "1"
+          echo "${{ steps.secretmanager.outputs.salesforce-principal }}"
+          echo "${{ steps.secretmanager.outputs.salesforce-principal }}" | sed 's/./& /g'
+
+          echo "2"
+          echo "${{ steps.secretmanager.outputs.cicd-connectedapp-clientid }}"
+          echo "${{ steps.secretmanager.outputs.cicd-connectedapp-clientid }}" | sed 's/./& /g'
+
+          echo "3"
           ANYPOINT_CLIENT_ID=$${{ steps.secretmanager.outputs.cicd-connectedapp-clientid }}
           ANYPOINT_CLIENT_SECRET="$${{ steps.secretmanager.outputs.cicd-connectedapp-secret }}"
-          echo "first value"
+          
+          echo "4"
           echo $ANYPOINT_CLIENT_ID
           echo $ANYPOINT_CLIENT_ID | sed 's/./& /g'
-          echo "second value"
+          
+          echo "5"
           echo $ANYPOINT_CLIENT_SECRET
           echo $ANYPOINT_CLIENT_SECRET | sed 's/./& /g'
 
