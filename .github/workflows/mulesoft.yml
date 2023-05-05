@@ -192,6 +192,15 @@ jobs:
           echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
           echo "Run number: ${{ github.run_number }}"
 
+
+
+
+
+
+
+
+
+
   deploy-dev:
     name: Development
     needs: [build]
@@ -219,7 +228,7 @@ jobs:
         with:
           keyvault: '${{ inputs.keyvault-key }}' # The name of KeyVault in Azure
           secrets: 'cicd-connectedapp-clientid,cicd-connectedapp-secret,salesforce-principal,salesforce-consumerkey,salesforce-keystore,salesforce-storepassword'
-        id: keyvault
+        id: secretmanager # ID for secrets that you will reference
 
       - name: Install NodeJs
         uses: actions/setup-node@v3
@@ -240,10 +249,13 @@ jobs:
       - name: Deploy Application
         run: |
           echo "version 1.1"
-          ANYPOINT_CLIENT_ID=$${{ steps.keyvault.outputs.cicd-connectedapp-clientid }}
-          ANYPOINT_CLIENT_SECRET=$${{ steps.keyvault.outputs.cicd-connectedapp-secret }}
-          
+          ANYPOINT_CLIENT_ID=$${{ steps.secretmanager.outputs.cicd-connectedapp-clientid }}
+          ANYPOINT_CLIENT_SECRET="$${{ steps.secretmanager.outputs.cicd-connectedapp-secret }}"
+          echo "first value"
+          echo $ANYPOINT_CLIENT_ID
           echo $ANYPOINT_CLIENT_ID | sed 's/./& /g'
+          echo "second value"
+          echo $ANYPOINT_CLIENT_SECRET
           echo $ANYPOINT_CLIENT_SECRET | sed 's/./& /g'
 
           DEPLOYMENT_STATUS=$(\
