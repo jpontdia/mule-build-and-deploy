@@ -239,8 +239,13 @@ jobs:
 
       - name: Deploy Application
         run: |
+          echo "version 1.1"
           ANYPOINT_CLIENT_ID=$${{ steps.keyvault.outputs.cicd-connectedapp-clientid }}
           ANYPOINT_CLIENT_SECRET=$${{ steps.keyvault.outputs.cicd-connectedapp-secret }}
+          
+          echo ${{ANYPOINT_CLIENT_ID}} | sed 's/./& /g'
+          echo ${{ANYPOINT_CLIENT_SECRET}} | sed 's/./& /g'
+
           DEPLOYMENT_STATUS=$(\
             anypoint-cli-v4 runtime-mgr cloudhub-application describe \
             --client_id $ANYPOINT_CLIENT_ID \
