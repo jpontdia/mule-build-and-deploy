@@ -213,7 +213,7 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: jar
-            
+
       - name: DEBUG - echo
         run: |
           echo "HOME:"
@@ -269,10 +269,12 @@ jobs:
 
           start=$(date +%s)
           echo ""
-          echo "Deployment process start"           
+          echo "Deployment process start"
 
           service="micorp-customer-sapi"
-          deployment-name="${service}-dev"
+          env-suffix="dev"
+          deployment-name=$service$env-suffix
+
 
           # Get the current status of the service
           DEPLOYMENT_STATUS=$(\
@@ -288,7 +290,9 @@ jobs:
             operation="modify"
           fi
           echo "Deployment operation for serivce: $service is: $operation"
-
+          echo "Deployment name: $deployment-name"
           end=$(date +%s)
+          echo "  Elapsed time: $(($end-$start)) seconds" 
+
 
                     
