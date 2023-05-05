@@ -256,24 +256,24 @@ jobs:
       - name: Deploy Application
         run: |
           echo "1"
-          echo "${{ steps.secretmanager.outputs.salesforce-principal }}"
-          echo "${{ steps.secretmanager.outputs.salesforce-principal }}" | sed 's/./& /g'
+          echo "${{ steps.secretmanager.outputs.cicd-connectedapp-secret }}"
+          echo "${{ steps.secretmanager.outputs.cicd-connectedapp-secret }}" | sed 's/./& /g'
 
           echo "2"
           echo "${{ steps.secretmanager.outputs.cicd-connectedapp-clientid }}"
           echo "${{ steps.secretmanager.outputs.cicd-connectedapp-clientid }}" | sed 's/./& /g'
 
           echo "3"
-          ANYPOINT_CLIENT_ID=$${{ steps.secretmanager.outputs.cicd-connectedapp-clientid }}
-          ANYPOINT_CLIENT_SECRET="$${{ steps.secretmanager.outputs.cicd-connectedapp-secret }}"
+          ANYPOINT_CLIENT_ID="${{ steps.secretmanager.outputs.cicd-connectedapp-clientid }}"
+          ANYPOINT_CLIENT_SECRET="${{ steps.secretmanager.outputs.cicd-connectedapp-secret }}"
           
           echo "4"
-          echo $ANYPOINT_CLIENT_ID
-          echo $ANYPOINT_CLIENT_ID | sed 's/./& /g'
+          echo "$ANYPOINT_CLIENT_ID"
+          echo "$ANYPOINT_CLIENT_ID" | sed 's/./& /g'
           
           echo "5"
-          echo $ANYPOINT_CLIENT_SECRET
-          echo $ANYPOINT_CLIENT_SECRET | sed 's/./& /g'
+          echo "$ANYPOINT_CLIENT_SECRET"
+          echo "$ANYPOINT_CLIENT_SECRET" | sed 's/./& /g'
 
           DEPLOYMENT_STATUS=$(\
             anypoint-cli-v4 runtime-mgr cloudhub-application describe \
