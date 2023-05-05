@@ -215,7 +215,7 @@ jobs:
           creds: ${{ secrets.azure-credentials }}
 
       - name: Azure get KeyVault secrets
-        uses: Azure/get-keyvault-secrets@v1
+        uses: Azure/get-keyvault-secrets@v1.1
         with:
           keyvault: '${{ inputs.keyvault-key }}' # The name of KeyVault in Azure
           secrets: 'cicd-connectedapp-clientid,cicd-connectedapp-secret,salesforce-principal,salesforce-consumerkey,salesforce-keystore,salesforce-storepassword'
