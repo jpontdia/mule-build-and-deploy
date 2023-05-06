@@ -25,7 +25,6 @@ jobs:
 
       - name: Get POM details
         run: |
-          xmllint --version
           xpath
 
       - name: Azure log-in
