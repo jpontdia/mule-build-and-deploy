@@ -176,6 +176,12 @@ jobs:
           name: jar
           path: target/*.jar
 
+      - name: Publish - POM 
+        uses: actions/upload-artifact@master
+        with:
+          name: pom
+          path: pom.xml
+
   build-backup:
     name: Build 
     if: ${{ false }}    
@@ -214,16 +220,22 @@ jobs:
       name: dev
       url: 'https://dev.myapp.com'
     steps:
-      - uses: actions/download-artifact@v2
+      - name: Get JAR file
+        uses: actions/download-artifact@v2
         with:
           name: jar
 
-      - name: DEBUG - echo
+      - name: Get POM file
+        uses: actions/download-artifact@v2
+        with:
+          name: pom
+
+      - name: DEBUG - Print directory tree and variables
         run: |
           echo "HOME:"
           ls -la $HOME
-          echo "tree HOME/work"
-          tree $HOME/work
+          #echo "tree HOME/work"
+          #tree $HOME/work
           echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
           echo "Run number: ${{ github.run_number }}"
 
@@ -266,6 +278,18 @@ jobs:
           echo "Installing cloudhub-plugin"
           anypoint-cli-v4 plugins:install anypoint-cli-cloudhub-plugin
 
+      - name: Get service metadata
+        run: |
+          service=$(sed -n 's:.*<name>\(.*\)</name>.*:\1:p' pom.xml | sed -n 1p)
+          servicegroup=$(sed -n 's:.*<groupId>\(.*\)</groupId>.*:\1:p' pom.xml | sed -n 2p)
+          serviceartifact=$(sed -n 's:.*<artifactId>\(.*\)</artifactId>.*:\1:p' pom.xml | sed -n 2p)
+          serviceversion=$(sed -n 's:.*<version>\(.*\)</version>.*:\1:p' pom.xml | sed -n 2p)
+
+          echo "Service name: $service"
+          echo "Service group: $servicegroup"
+          echo "Service artifact: $serviceartifact"
+          echo "Service version: $serviceversion"
+
       - name: Deploy Application
         run: |
           ANYPOINT_CLIENT_ID="${{ steps.secretmanager.outputs.cicd-connectedapp-clientid }}"
@@ -275,7 +299,6 @@ jobs:
           echo ""
           echo "Deployment process start"
 
-          service="micorp-customer-sapi"
           envsuffix="dev"
           deploymentname=$service$envsuffix
 
@@ -295,7 +318,4 @@ jobs:
           echo "Deployment operation for serivce: $service is: $operation"
           echo "Deployment name: $deploymentname"
           end=$(date +%s)
-          echo "  Elapsed time: $(($end-$start)) seconds" 
-
-
-                    
+          echo "  Elapsed time: $(($end-$start)) seconds"   
