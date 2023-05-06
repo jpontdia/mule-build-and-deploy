@@ -272,9 +272,8 @@ jobs:
           echo "Deployment process start"
 
           service="micorp-customer-sapi"
-          env-suffix="dev"
-          deployment-name=$service$env-suffix
-
+          envsuffix="dev"
+          deploymentname=$service$envsuffix
 
           # Get the current status of the service
           DEPLOYMENT_STATUS=$(\
@@ -290,7 +289,7 @@ jobs:
             operation="modify"
           fi
           echo "Deployment operation for serivce: $service is: $operation"
-          echo "Deployment name: $deployment-name"
+          echo "Deployment name: $deploymentname"
           end=$(date +%s)
           echo "  Elapsed time: $(($end-$start)) seconds" 
 
