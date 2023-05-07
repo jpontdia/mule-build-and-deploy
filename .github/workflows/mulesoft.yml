@@ -331,7 +331,6 @@ jobs:
           --client_secret $ANYPOINT_CLIENT_SECRET \
           --runtime "4.4.0" \
           --region "us-west-1" \
-          --output "json" \
           --workers "1" \
           --workerSize "0.1" \
           --property "salesforce.storepassword:micorpintegration" \
@@ -347,7 +346,7 @@ jobs:
           --property "anypoint.platform.client_id:1fd4a0841a6a47eba4cb2934ca1baf32" \
           --property "anypoint.platform.client_secret:F77CfFEA3a9741A19B2905173F910134" \
           --property "anypoint.platform.config.analytics.agent.enabled:true" \
-          "$deploymentname" "$jar"
+          --output "json" "$deploymentname" "$jar"
 
           end=$(date +%s)
           echo ""
