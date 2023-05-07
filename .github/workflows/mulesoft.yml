@@ -10,6 +10,9 @@ on:
       azure-credentials:
         required: true
         description: Azure Credentials for login
+      configurations-token:
+        required: true
+        description: Access token to get the configuration for the service
 
 jobs:
   build:
@@ -302,6 +305,10 @@ jobs:
           deploymentname=$service$envsuffix
           echo "Deployment name: $deploymentname"
           echo "Jar file: $jar"
+
+          # Get the configuration file for the service
+          curl -H "Authorization: token ${{ secrets.configurations-token }}" https://raw.githubusercontent.com/jpontdia/mule-configurations/main/$deploymentname.yml
+          cat "$deploymentname.yml"
 
           start=$(date +%s)
           echo ""
