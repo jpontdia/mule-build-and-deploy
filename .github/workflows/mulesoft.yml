@@ -23,10 +23,6 @@ jobs:
       - name: Get the source code
         uses: actions/checkout@v3
 
-      - name: debug echo
-        run: |
-          envsubst --version
-
       - name: Azure log-in
         uses: azure/login@v1
         with:
@@ -48,13 +44,20 @@ jobs:
             '
         id: secretmanager # ID for secrets that you will reference
       
+      - name: Cache local Maven repository
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+                  
       - name: Setup JDK 8
         uses: actions/setup-java@v3
         with:
           java-version: '8'
-          # Available options: liberica, corretto
           distribution: 'temurin'
-          check-latest: true
+          #check-latest: true
           cache: 'maven'
 
       # Creates a settings.xml file and configure the anypoint repositories for the organization and the mulesoft EE
@@ -239,10 +242,6 @@ jobs:
           echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
           echo "Run number: ${{ github.run_number }}"
 
-          # Get the jar file
-          jar=$(ls *.jar)
-          echo "Jar file: $jar"
-
       - name: Azure log-in
         uses: azure/login@v1
         with:
@@ -283,13 +282,18 @@ jobs:
           ANYPOINT_CLIENT_ID="${{ steps.secretmanager.outputs.cicd-connectedapp-clientid }}"
           ANYPOINT_CLIENT_SECRET="${{ steps.secretmanager.outputs.cicd-connectedapp-secret }}"
 
-          #POM file must be in the root directory
+          #POM and JAR file must be in the root directory
           echo "Getting the service metadata from pom file for deployment"
           service=$(sed -n 's:.*<name>\(.*\)</name>.*:\1:p' pom.xml | sed -n 1p)
           servicegroup=$(sed -n 's:.*<groupId>\(.*\)</groupId>.*:\1:p' pom.xml | sed -n 2p)
           serviceartifact=$(sed -n 's:.*<artifactId>\(.*\)</artifactId>.*:\1:p' pom.xml | sed -n 2p)
           serviceversion=$(sed -n 's:.*<version>\(.*\)</version>.*:\1:p' pom.xml | sed -n 2p)
+          
+          # Get the jar file
+          jar=$(ls *.jar)
+          echo "Jar file: $jar"
 
+          # Show variables for the script
           echo "Service name: $service"
           echo "Service group: $servicegroup"
           echo "Service artifact: $serviceartifact"
@@ -297,6 +301,7 @@ jobs:
           envsuffix="-dev"
           deploymentname=$service$envsuffix
           echo "Deployment name: $deploymentname"
+          echo "Jar file: $jar"
 
           start=$(date +%s)
           echo ""
