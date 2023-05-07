@@ -283,6 +283,7 @@ jobs:
           ANYPOINT_CLIENT_ID="${{ steps.secretmanager.outputs.cicd-connectedapp-clientid }}"
           ANYPOINT_CLIENT_SECRET="${{ steps.secretmanager.outputs.cicd-connectedapp-secret }}"
 
+          #POM file must be in the root directory
           echo "Getting the service metadata from pom file for deployment"
           service=$(sed -n 's:.*<name>\(.*\)</name>.*:\1:p' pom.xml | sed -n 1p)
           servicegroup=$(sed -n 's:.*<groupId>\(.*\)</groupId>.*:\1:p' pom.xml | sed -n 2p)
@@ -293,28 +294,90 @@ jobs:
           echo "Service group: $servicegroup"
           echo "Service artifact: $serviceartifact"
           echo "Service version: $serviceversion"
+          envsuffix="-dev"
+          deploymentname=$service$envsuffix
+          echo "Deployment name: $deploymentname"
 
           start=$(date +%s)
           echo ""
           echo "Deployment process start"
-
-          envsuffix="dev"
-          deploymentname=$service$envsuffix
 
           # Get the current status of the service
           DEPLOYMENT_STATUS=$(\
             anypoint-cli-v4 runtime-mgr cloudhub-application describe \
             --client_id $ANYPOINT_CLIENT_ID \
             --client_secret $ANYPOINT_CLIENT_SECRET \
-            --output "json" $service | jq -r ".status")
-          echo "Deployment status for service: $service is: $DEPLOYMENT_STATUS"
+            --output "json" $deploymentname | jq -r ".status")
+          echo "Deployment status for service: $deploymentname is: $DEPLOYMENT_STATUS"
 
           # Verify if deployment is for update or new application
-          operation="depoy"
+          operation="deploy"
           if [ "$DEPLOYMENT_STATUS" != "" ]; then
             operation="modify"
           fi
-          echo "Deployment operation for serivce: $service is: $operation"
-          echo "Deployment name: $deploymentname"
+
+          echo ""
+          echo "Deployment operation for serivce: $deploymentname is: $operation"
           end=$(date +%s)
-          echo "  Elapsed time: $(($end-$start)) seconds"   
+          echo "  Elapsed time: $(($end-$start)) seconds"
+          echo "Deploying...."
+          anypoint-cli-v4 runtime-mgr cloudhub-application $operation \
+          --client_id $ANYPOINT_CLIENT_ID \
+          --client_secret $ANYPOINT_CLIENT_SECRET \
+          --runtime "4.4.0" \
+          --region "us-west-1" \
+          --output "json" \
+          --workers "1" \
+          --workerSize "0.1" \
+          --property "salesforce.storepassword:micorpintegration" \
+          --property "salesforce.principal:micorp.integration@yopmail.com" \
+          --property "salesforce.consumerkey:3MVG99gP.VbJma8Wlu2C246aMscxqW6uf16qBTqgJ_W_83zcxkOHabPMNVQ7Zp9w9erow6j2.ANtwFErPBHS3" \
+          --property "salesforce.keystore:keystore.jks" \
+          --property "logzio.token:MKMjnTtiZSElNvyOokkGBnnMFlcOQift" \
+          --property "logzio.url:https\://listener.logz.io\:8071" \
+          --property "otel.collectorendpoint:http\://13.52.179.177\:4317" \
+          --property "otel.servicename:micorp-customer-sapi-dev" \
+          --property "api.id:17868760" \
+          --property "env:dev" \
+          --property "anypoint.platform.client_id:1fd4a0841a6a47eba4cb2934ca1baf32" \
+          --property "anypoint.platform.client_secret:F77CfFEA3a9741A19B2905173F910134" \
+          --property "anypoint.platform.config.analytics.agent.enabled:true" \
+          "$deploymentname" "$jar"
+
+          end=$(date +%s)
+          echo ""
+          echo "Deployment finished, verifying the deployment...."
+          echo "  Elapsed time: $(($end-$start)) seconds" 
+
+          iteration=1
+          limit=60
+          while true
+          do 
+            sleep 5
+
+            # Get the current status of the service
+            DEPLOYMENT_STATUS=$(\
+              anypoint-cli-v4 runtime-mgr cloudhub-application describe \
+              --client_id $ANYPOINT_CLIENT_ID \
+              --client_secret $ANYPOINT_CLIENT_SECRET \
+              --output "json" $deploymentname | jq -r ".status")
+            echo "Deployment status for service: $deploymentname is: $DEPLOYMENT_STATUS"
+
+            end=$(date +%s)
+            echo "  Elapsed time: $(($end-$start)) seconds, iteration: $iteration limit: $limit"
+
+            if [ "$DEPLOYMENT_STATUS" = "STARTED" ] || [ $iteration -eq $limit ]; then
+              echo "Deploymnent success"
+              break # Abandon the while loop.
+            fi
+
+            iteration=$(( $iteration + 1 ))
+          done
+
+          if [ "$DEPLOYMENT_STATUS" != "STARTED" ]; then
+            echo "Error: The service was not deployed in the expected time, review logs"
+            echo "  example: anypoint-cli-v4 runtime-mgr cloudhub-application download-logs {APP-NAME}"
+            echo "The expected iterations were 44 but the proccess reached the limit: $limit"
+
+            exit 1 # terminate and indicate error
+          fi
