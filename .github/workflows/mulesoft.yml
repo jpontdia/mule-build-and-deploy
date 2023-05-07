@@ -312,7 +312,6 @@ jobs:
           urlconfigurationfile="https://raw.githubusercontent.com/jpontdia/mule-configurations/main/$configurationfile"
           echo "Getting the configuration file: $urlconfigurationfile"
           configurationdata=$(curl -sH "Authorization: token $configurationtoken" $urlconfigurationfile)
-          cat "$configurationfile"
           confcloudhub=$(echo $configurationfile | jq -r ".cloudhub")
           confproperties=$(echo $configurationfile | jq -r ".properties")
           echo $confcloudhub
