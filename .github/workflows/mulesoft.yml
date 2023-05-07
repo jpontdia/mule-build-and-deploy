@@ -308,16 +308,16 @@ jobs:
           echo "Deployment process start"
 
           # Get the current status of the service
-          DEPLOYMENT_STATUS=$(\
+          STATUS=$(\
             anypoint-cli-v4 runtime-mgr cloudhub-application describe \
             --client_id $ANYPOINT_CLIENT_ID \
             --client_secret $ANYPOINT_CLIENT_SECRET \
             --output "json" $deploymentname | jq -r ".status")
-          echo "Deployment status for service: $deploymentname is: $DEPLOYMENT_STATUS"
+          echo "Deployment status for service: $deploymentname is: $STATUS"
 
           # Verify if deployment is for update or new application
           operation="deploy"
-          if [ "$DEPLOYMENT_STATUS" != "" ]; then
+          if [ "$STATUS" != "" ]; then
             operation="modify"
           fi
 
@@ -360,28 +360,40 @@ jobs:
             sleep 5
 
             # Get the current status of the service
-            DEPLOYMENT_STATUS=$(\
+            DEPLOYMENT_INFO=$(\
               anypoint-cli-v4 runtime-mgr cloudhub-application describe \
               --client_id $ANYPOINT_CLIENT_ID \
               --client_secret $ANYPOINT_CLIENT_SECRET \
-              --output "json" $deploymentname | jq -r ".status")
-            echo "Deployment status for service: $deploymentname is: $DEPLOYMENT_STATUS"
+              --output "json" $deploymentname)
+            STATUS=$(echo $DEPLOYMENT_INFO | jq -r ".status")
+            UPDATE_STATUS=$(echo $DEPLOYMENT_INFO | jq -r ".deploymentUpdateStatus")  
+            echo "Service: $deploymentname status: $STATUS, updateStatus: $UPDATE_STATUS"
 
             end=$(date +%s)
             echo "  Elapsed time: $(($end-$start)) seconds, iteration: $iteration limit: $limit"
 
-            if [ "$DEPLOYMENT_STATUS" = "STARTED" ] || [ $iteration -eq $limit ]; then
-              echo "Deploymnent success"
-              break # Abandon the while loop.
+            if [ "$operation" = "deploy" ]; then
+                # Create service
+
+                if [ "$STATUS" = "STARTED" ] || [ $iteration -eq $limit ]; then
+                  break # Abandon the while loop.
+                fi
+            else
+                # Update service
+                if [ "$UPDATE_STATUS" = "null" ] || [ $iteration -eq $limit ]; then
+                  break # Abandon the while loop.
+                fi
             fi
 
             iteration=$(( $iteration + 1 ))
           done
 
-          if [ "$DEPLOYMENT_STATUS" != "STARTED" ]; then
+          if [ "$STATUS" != "STARTED" ]; then
             echo "Error: The service was not deployed in the expected time, review logs"
             echo "  example: anypoint-cli-v4 runtime-mgr cloudhub-application download-logs {APP-NAME}"
             echo "The expected iterations were 44 but the proccess reached the limit: $limit"
 
             exit 1 # terminate and indicate error
+          else
+            echo "Deployment successful.."
           fi
