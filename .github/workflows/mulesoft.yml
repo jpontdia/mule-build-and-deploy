@@ -278,8 +278,12 @@ jobs:
           echo "Installing cloudhub-plugin"
           anypoint-cli-v4 plugins:install anypoint-cli-cloudhub-plugin
 
-      - name: Get service metadata
+      - name: Deploy Application
         run: |
+          ANYPOINT_CLIENT_ID="${{ steps.secretmanager.outputs.cicd-connectedapp-clientid }}"
+          ANYPOINT_CLIENT_SECRET="${{ steps.secretmanager.outputs.cicd-connectedapp-secret }}"
+
+          echo "Getting the service metadata from pom file for deployment"
           service=$(sed -n 's:.*<name>\(.*\)</name>.*:\1:p' pom.xml | sed -n 1p)
           servicegroup=$(sed -n 's:.*<groupId>\(.*\)</groupId>.*:\1:p' pom.xml | sed -n 2p)
           serviceartifact=$(sed -n 's:.*<artifactId>\(.*\)</artifactId>.*:\1:p' pom.xml | sed -n 2p)
@@ -289,11 +293,6 @@ jobs:
           echo "Service group: $servicegroup"
           echo "Service artifact: $serviceartifact"
           echo "Service version: $serviceversion"
-
-      - name: Deploy Application
-        run: |
-          ANYPOINT_CLIENT_ID="${{ steps.secretmanager.outputs.cicd-connectedapp-clientid }}"
-          ANYPOINT_CLIENT_SECRET="${{ steps.secretmanager.outputs.cicd-connectedapp-secret }}"
 
           start=$(date +%s)
           echo ""
