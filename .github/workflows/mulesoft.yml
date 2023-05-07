@@ -284,6 +284,7 @@ jobs:
         run: |
           ANYPOINT_CLIENT_ID="${{ steps.secretmanager.outputs.cicd-connectedapp-clientid }}"
           ANYPOINT_CLIENT_SECRET="${{ steps.secretmanager.outputs.cicd-connectedapp-secret }}"
+          configurationtoken=${{ secrets.configurations-token }}
 
           #POM and JAR file must be in the root directory
           echo "Getting the service metadata from pom file for deployment"
@@ -308,9 +309,9 @@ jobs:
 
           # Get the configuration file for the service
           configurationfile=$deploymentname.yml
-          urlconfigurationfile=https://raw.githubusercontent.com/jpontdia/mule-configurations/main/$configurationfile
+          urlconfigurationfile="https://raw.githubusercontent.com/jpontdia/mule-configurations/main/$configurationfile"
           echo "Getting the configuration file: $urlconfigurationfile"
-          curl -H "Authorization: token ${{ secrets.configurations-token }}" $urconfigurationfile
+          curl -H "Authorization: token $configurationtoken" $urlconfigurationfile
           tree .
           cat "$configurationfile"
 
