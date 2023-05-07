@@ -311,10 +311,12 @@ jobs:
           configurationfile=$deploymentname.yml
           urlconfigurationfile="https://raw.githubusercontent.com/jpontdia/mule-configurations/main/$configurationfile"
           echo "Getting the configuration file: $urlconfigurationfile"
-          curl -H "Authorization: token $configurationtoken" $urlconfigurationfile
-          tree .
+          configurationdata=$(curl -sH "Authorization: token $configurationtoken" $urlconfigurationfile)
           cat "$configurationfile"
-
+          confcloudhub=$(echo $configurationfile | jq -r ".cloudhub")
+          confproperties=$(echo $configurationfile | jq -r ".properties")
+          echo $confcloudhub
+          echo $confproperties
           start=$(date +%s)
           echo ""
           echo "Deployment process start"
