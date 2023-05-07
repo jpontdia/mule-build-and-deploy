@@ -307,8 +307,12 @@ jobs:
           echo "Jar file: $jar"
 
           # Get the configuration file for the service
-          curl -H "Authorization: token ${{ secrets.configurations-token }}" https://raw.githubusercontent.com/jpontdia/mule-configurations/main/$deploymentname.yml
-          cat "$deploymentname.yml"
+          configurationfile=$deploymentname.yml
+          urlconfigurationfile=https://raw.githubusercontent.com/jpontdia/mule-configurations/main/$configurationfile
+          echo "Getting the configuration file: $urlconfigurationfile"
+          curl -H "Authorization: token ${{ secrets.configurations-token }}" $urconfigurationfile
+          tree .
+          cat "$configurationfile"
 
           start=$(date +%s)
           echo ""
