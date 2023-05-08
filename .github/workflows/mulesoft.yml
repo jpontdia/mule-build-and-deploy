@@ -307,6 +307,9 @@ jobs:
           echo "Deployment name: $deploymentname"
           echo "Jar file: $jar"
 
+          # yaml pareser version
+          yq --version
+
           # Get the configuration file for the service
           configurationfile=$deploymentname.yml
           urlconfigurationfile="https://raw.githubusercontent.com/jpontdia/mule-configurations/main/$configurationfile"
@@ -315,10 +318,11 @@ jobs:
           echo "Configuration properties: $configurationdata"
           echo "Get cloud configuration.."
           confcloudhub=$(echo $configurationdata | yq -r ".cloudhub")
+          echo $confcloudhub
           echo "Get properties.."
           confproperties=$(echo $configurationdata | yq -r ".properties")
-          echo $confcloudhub
           echo $confproperties
+
           start=$(date +%s)
           echo ""
           echo "Deployment process start"
