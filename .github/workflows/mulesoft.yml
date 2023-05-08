@@ -388,7 +388,7 @@ jobs:
                 fi
             else
                 # Update service
-                if [ "$UPDATE_STATUS" = "null" ] || [ $iteration -eq $limit ]; then
+                if [ "$UPDATE_STATUS" = "null" ] || [ "$UPDATE_STATUS" = "DEPLOY_FAILED" ] || [ $iteration -eq $limit ]; then
                   break # Abandon the while loop.
                 fi
             fi
@@ -396,12 +396,34 @@ jobs:
             iteration=$(( $iteration + 1 ))
           done
 
-          if [ "$STATUS" != "STARTED" ]; then
-            echo "Error: The service was not deployed in the expected time, review logs"
-            echo "  example: anypoint-cli-v4 runtime-mgr cloudhub-application download-logs {APP-NAME}"
-            echo "The expected iterations were 44 but the proccess reached the limit: $limit"
 
-            exit 1 # terminate and indicate error
+
+
+          # Verify if service was successfully deployed 
+          if [ "$operation" = "deploy" ]; then
+
+            # Create new service
+            if [ "$STATUS" != "STARTED" ]; then
+              echo "Error: The service was not deployed in the expected time, review logs"
+              echo "  example: anypoint-cli-v4 runtime-mgr cloudhub-application download-logs {APP-NAME}"
+              echo "The expected iterations were 44 but the proccess reached the limit: $limit"
+
+              exit 1 # terminate and indicate error
+            else
+              echo "Deployment successful.."
+            fi
           else
-            echo "Deployment successful.."
+            # Update service
+            if [ "$UPDATE_STATUS" = "DEPLOY_FAILED" ]; then
+              echo "Error: There were errors while deploying the service"
+              exit 1 # terminate and indicate error
+            elif [ $iteration -eq $limit ]; then
+              echo "Error: The service was not deployed in the expected time, review logs"
+              echo "  example: anypoint-cli-v4 runtime-mgr cloudhub-application download-logs {APP-NAME}"
+              echo "The expected iterations were 44 but the proccess reached the limit: $limit"
+
+              exit 1 # terminate and indicate error
+            else
+              echo "Deployment successful.."
+            fi
           fi
