@@ -312,8 +312,8 @@ jobs:
           urlconfigurationfile="https://raw.githubusercontent.com/jpontdia/mule-configurations/main/$configurationfile"
           echo "Getting the configuration file: $urlconfigurationfile"
           configurationdata=$(curl -sH "Authorization: token $configurationtoken" $urlconfigurationfile)
-          confcloudhub=$(echo $configurationfile | jq -r ".cloudhub")
-          confproperties=$(echo $configurationfile | jq -r ".properties")
+          confcloudhub=$(echo $configurationdata | yq -r ".cloudhub")
+          confproperties=$(echo $configurationdata | yq -r ".properties")
           echo $confcloudhub
           echo $confproperties
           start=$(date +%s)
@@ -339,28 +339,16 @@ jobs:
           end=$(date +%s)
           echo "  Elapsed time: $(($end-$start)) seconds"
           echo "Deploying...."
-          anypoint-cli-v4 runtime-mgr cloudhub-application $operation \
+          command="anypoint-cli-v4 runtime-mgr cloudhub-application $operation \
           --client_id $ANYPOINT_CLIENT_ID \
-          --client_secret $ANYPOINT_CLIENT_SECRET \
-          --runtime "4.4.0" \
-          --region "us-west-1" \
-          --workers "1" \
-          --workerSize "0.1" \
-          --property "salesforce.storepassword:micorpintegration" \
-          --property "salesforce.principal:micorp.integration@yopmail.com" \
-          --property "salesforce.consumerkey:3MVG99gP.VbJma8Wlu2C246aMscxqW6uf16qBTqgJ_W_83zcxkOHabPMNVQ7Zp9w9erow6j2.ANtwFErPBHS3" \
-          --property "salesforce.keystore:keystore.jks" \
-          --property "logzio.token:MKMjnTtiZSElNvyOokkGBnnMFlcOQift" \
-          --property "logzio.url:https\://listener.logz.io\:8071" \
-          --property "otel.collectorendpoint:http\://13.52.179.177\:4317" \
-          --property "otel.servicename:micorp-customer-sapi-dev" \
-          --property "api.id:17868760" \
-          --property "env:dev" \
-          --property "anypoint.platform.client_id:1fd4a0841a6a47eba4cb2934ca1baf32" \
-          --property "anypoint.platform.client_secret:F77CfFEA3a9741A19B2905173F910134" \
-          --property "anypoint.platform.config.analytics.agent.enabled:true" \
-          --output "json" "$deploymentname" "$jar"
+          --client_secret $ANYPOINT_CLIENT_SECRET "
 
+          command="$command $confcloudhub $confproperties --output json $deploymentname $jar"
+
+          echo "deployment command: $command"
+          $command
+
+          
           end=$(date +%s)
           echo ""
           echo "Deployment finished, verifying the deployment...."
