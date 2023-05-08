@@ -312,7 +312,10 @@ jobs:
           urlconfigurationfile="https://raw.githubusercontent.com/jpontdia/mule-configurations/main/$configurationfile"
           echo "Getting the configuration file: $urlconfigurationfile"
           configurationdata=$(curl -sH "Authorization: token $configurationtoken" $urlconfigurationfile)
+          echo "Configuration properties: $configurationdata"
+          echo "Get cloud configuration.."
           confcloudhub=$(echo $configurationdata | yq -r ".cloudhub")
+          echo "Get properties.."
           confproperties=$(echo $configurationdata | yq -r ".properties")
           echo $confcloudhub
           echo $confproperties
@@ -348,7 +351,7 @@ jobs:
           echo "deployment command: $command"
           $command
 
-          
+
           end=$(date +%s)
           echo ""
           echo "Deployment finished, verifying the deployment...."
