@@ -231,20 +231,4 @@ jobs:
 
 
 
-  deploy-dev:
-    name: Development
-    needs: [build]
-    runs-on: ubuntu-latest
-    env:
-      initialsecretconfiguration: ""
-      secretsconfiguration: ""
 
-    environment:
-      name: dev
-      url: 'https://dev.myapp.com'
-    steps:
-
-      - name: Get the mapping for the secrets 
-        run: |
-          #Configure environment variables
-          configurationtoken=${{ secrets.configurations-token }}
