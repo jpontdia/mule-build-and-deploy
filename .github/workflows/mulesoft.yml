@@ -253,25 +253,20 @@ jobs:
           secretsmappingfile="secrets-mapping.txt"
           urlconfigurationfile="https://raw.githubusercontent.com/jpontdia/mule-configurations/main/$secretsmappingfile"
           echo "Getting the secrets mapping file: $urlconfigurationfile"
-          echo "Token: $configurationtoken"
-          configurationmapping=$(curl -sH "Authorization: token $configurationtoken" $urlconfigurationfile)
-          echo "temp configurationmapping=$configurationmapping"
+          originalsecretsmapping=$(curl -sH "Authorization: token $configurationtoken" $urlconfigurationfile)
 
-          mapping=""
-          echo "$configurationmapping" | while read p; do
-          if [[ "$p" =~ ^#.*  ]]; then
-            echo "yes"
-          else
-            mapping="$mapping $p"
-          fi
+          echo "$originalsecretsmapping" | while read p; do
+            if [[ "$p" =~ ^#.*  ]]; then
+              echo "yes"
+            else
+              echo " variable found: $p"
+              secretsmapping="$secretsmapping $p"
+            fi
           done 
 
           echo ""
-          echo "Secrets mapping: $mapping"
-          orginalsecretsmapping=$configurationmapping
-          secretsmapping=$mapping
-          echo "Secrets orginalsecretsmapping: $orginalsecretsmapping"
-          echo "Secrets secretsmapping: $secretsmapping"         
+          echo "Secrets mapping: $secretsmapping"
+          echo "Secrets orginalsecretsmapping: $originalsecretsmapping"
 
       - name: Azure log-in
         uses: azure/login@v1
